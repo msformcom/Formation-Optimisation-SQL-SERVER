@@ -1,0 +1,1639 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guide Complet : Optimisation des Requêtes SQL Server</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --light-color: #ecf0f1;
+            --dark-color: #2c3e50;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            --font-code: 'Consolas', 'Courier New', monospace;
+        }
+
+        body {
+            font-family: var(--font-main);
+            line-height: 1.6;
+            color: #333;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 30px 0;
+            text-align: center;
+            margin-bottom: 30px;
+            border-radius: 0 0 10px 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 700;
+        }
+
+        header p {
+            margin: 10px 0 0;
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        nav {
+            background-color: var(--dark-color);
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        nav li {
+            margin: 0 15px;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 5px 10px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        nav a:hover {
+            background-color: var(--secondary-color);
+        }
+
+        section {
+            background-color: white;
+            margin-bottom: 30px;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        h2 {
+            color: var(--primary-color);
+            font-size: 1.8em;
+            margin-top: 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--secondary-color);
+        }
+
+        h3 {
+            color: var(--secondary-color);
+            font-size: 1.4em;
+            margin-top: 20px;
+        }
+
+        h4 {
+            color: var(--dark-color);
+            font-size: 1.2em;
+        }
+
+        p {
+            margin: 10px 0;
+        }
+
+        .introduction {
+            background: linear-gradient(to right, #f8f9fa, #e9ecef);
+            padding: 20px;
+            border-left: 5px solid var(--secondary-color);
+            margin-bottom: 20px;
+        }
+
+        .problem-card {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background-color: white;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .problem-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .problem-card h3 {
+            color: var(--accent-color);
+            margin-top: 0;
+        }
+
+        .problem-card .severity {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .severity-high {
+            background-color: #ffebee;
+            color: #c62828;
+        }
+
+        .severity-medium {
+            background-color: #fff3e0;
+            color: #e65100;
+        }
+
+        .severity-low {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .solution-box {
+            background-color: #f0f7ff;
+            border-left: 4px solid var(--secondary-color);
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+
+        .solution-box h4 {
+            margin-top: 0;
+            color: var(--secondary-color);
+        }
+
+        .code-block {
+            background-color: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-family: var(--font-code);
+            font-size: 0.9em;
+            margin: 15px 0;
+            border-left: 4px solid var(--accent-color);
+        }
+
+        .code-block .comment {
+            color: #75715e;
+        }
+
+        .code-block .keyword {
+            color: #f92672;
+        }
+
+        .code-block .string {
+            color: #e6db74;
+        }
+
+        .code-block .function {
+            color: #66d9ef;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 0.95em;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        th {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 600;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        tr:hover {
+            background-color: #e9ecef;
+        }
+
+        .tip {
+            background-color: #e3f2fd;
+            border-left: 4px solid var(--secondary-color);
+            padding: 10px 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+            font-style: italic;
+        }
+
+        .warning {
+            background-color: #fff3e0;
+            border-left: 4px solid var(--accent-color);
+            padding: 10px 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+
+        .warning::before {
+            content: "⚠️ ";
+        }
+
+        .tip::before {
+            content: "💡 ";
+        }
+
+        .tools-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .tool-card {
+            background-color: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            transition: transform 0.3s;
+        }
+
+        .tool-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .tool-card h4 {
+            margin-top: 0;
+            color: var(--secondary-color);
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            background-color: var(--dark-color);
+            color: white;
+            margin-top: 30px;
+            border-radius: 10px 10px 0 0;
+        }
+
+        .symptoms-list, .causes-list {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        .symptoms-list li, .causes-list li {
+            padding: 5px 0;
+            position: relative;
+            padding-left: 25px;
+        }
+
+        .symptoms-list li::before {
+            content: "🔍";
+            position: absolute;
+            left: 0;
+        }
+
+        .causes-list li::before {
+            content: "🔗";
+            position: absolute;
+            left: 0;
+        }
+
+        .diagnostic-tools {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+        }
+
+        .diagnostic-tool {
+            background-color: #f0f7ff;
+            padding: 10px;
+            border-radius: 4px;
+            border-left: 4px solid var(--secondary-color);
+        }
+
+        .diagnostic-tool code {
+            background-color: white;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: var(--font-code);
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            nav ul {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            nav li {
+                margin: 5px 0;
+            }
+
+            .tools-section {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🚀 Optimisation des Requêtes SQL Server</h1>
+        <p>Guide complet pour diagnostiquer et résoudre les problèmes de performance</p>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="#introduction">Introduction</a></li>
+            <li><a href="#problematiques">Problématiques Courantes</a></li>
+            <li><a href="#outils">Outils de Diagnostic</a></li>
+            <li><a href="#solutions">Solutions et Bonnes Pratiques</a></li>
+            <li><a href="#checklist">Checklist de Dépannage</a></li>
+            <li><a href="#ressources">Ressources Utiles</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        
+        <!-- Introduction -->
+        <section id="introduction">
+            <div class="introduction">
+                <h2>📖 Introduction</h2>
+                <p>
+                    L'optimisation des requêtes SQL Server est un enjeu critique pour garantir des performances optimales 
+                    de vos applications. Ce guide vous propose une <strong>approche structurée</strong> pour identifier, 
+                    diagnostiquer et résoudre les problèmes de performance les plus courants.
+                </p>
+                <p>
+                    Que vous soyez confronté à des <strong>requêtes lentes</strong>, des <strong>blocages</strong>, 
+                    des <strong>deadlocks</strong>, ou des <strong>problèmes de mémoire</strong>, vous trouverez ici 
+                    des solutions concrètes et des bonnes pratiques pour améliorer l'efficacité de votre base de données.
+                </p>
+            </div>
+        </section>
+
+        <!-- Problématiques Courantes -->
+        <section id="problematiques">
+            <h2>⚠️ Problématiques Courantes de Performance</h2>
+            <p>
+                Voici les <strong>10 problèmes les plus fréquents</strong> affectant les performances des requêtes SQL Server, 
+                classés par fréquence et impact.
+            </p>
+
+            <!-- Plan sous-optimal -->
+            <div class="problem-card">
+                <h3>1. Plan d'exécution sous-optimal <span class="severity severity-high">Impact Élevé</span></h3>
+                <p>
+                    SQL Server génère un plan d'exécution coûteux en CPU, I/O ou temps, alors qu'un plan plus efficace existe.
+                </p>
+                <h4>Symptômes :</h4>
+                <ul class="symptoms-list">
+                    <li>Temps d'exécution anormalement long</li>
+                    <li>I/O élevé (lectures logiques/physiques)</li>
+                    <li>CPU élevé (opérations de tri, jointures coûteuses)</li>
+                    <li>Présence d'opérateurs coûteux : <code>Table Scan</code>, <code>Sort</code>, <code>Hash Match</code></li>
+                </ul>
+                <h4>Causes possibles :</h4>
+                <ul class="causes-list">
+                    <li>Statistiques obsolètes</li>
+                    <li>Paramètre Sniffing</li>
+                    <li>Manque ou mauvaise conception d'index</li>
+                    <li>Requêtes complexes (sous-requêtes, CTEs)</li>
+                    <li>Heuristiques du Query Optimizer</li>
+                </ul>
+            </div>
+
+            <!-- Blocking -->
+            <div class="problem-card">
+                <h3>2. Blocking (Blocage) <span class="severity severity-high">Impact Élevé</span></h3>
+                <p>
+                    Une requête attend qu'une autre libère un verrou sur une ressource (ligne, page, table).
+                </p>
+                <h4>Symptômes :</h4>
+                <ul class="symptoms-list">
+                    <li>Requêtes en attente (<code>WAIT</code> dans <code>sys.dm_exec_requests</code>)</li>
+                    <li>Timeout si <code>LOCK_TIMEOUT</code> est configuré</li>
+                    <li>Lenteur globale du système</li>
+                </ul>
+                <h4>Causes possibles :</h4>
+                <ul class="causes-list">
+                    <li>Transactions longues</li>
+                    <li>Niveau d'isolation élevé (<code>SERIALIZABLE</code>, <code>REPEATABLE READ</code>)</li>
+                    <li>Verrous implicites (<code>WITH (UPDLOCK, XLOCK)</code>)</li>
+                    <li>Conflits de verrous (verrou partagé vs exclusif)</li>
+                </ul>
+            </div>
+
+            <!-- Deadlocks -->
+            <div class="problem-card">
+                <h3>3. Deadlocks <span class="severity severity-high">Impact Élevé</span></h3>
+                <p>
+                    Deux requêtes s'attendent mutuellement pour acquérir des verrous, provoquant un blocage infini. 
+                    SQL Server tue une des requêtes (victime) pour résoudre le deadlock.
+                </p>
+                <h4>Symptômes :</h4>
+                <ul class="symptoms-list">
+                    <li>Erreur 1205 : <code>Deadlock encountered...</code></li>
+                    <li>Requêtes annulées sans raison apparente</li>
+                    <li>Logs de deadlocks dans <code>system_health</code></li>
+                </ul>
+                <h4>Causes possibles :</h4>
+                <ul class="causes-list">
+                    <li>Ordre d'accès aux ressources différent entre requêtes</li>
+                    <li>Transactions longues</li>
+                    <li>Verrous incompatibles</li>
+                </ul>
+            </div>
+
+            <!-- Spill to Disk -->
+            <div class="problem-card">
+                <h3>4. Spill to Disk (Déversement sur disque) <span class="severity severity-medium">Impact Moyen</span></h3>
+                <p>
+                    SQL Server manque de mémoire pour exécuter une opération (tri, jointure, agrégation) et doit utiliser 
+                    le <code>tempdb</code> comme mémoire temporaire, ce qui ralentit considérablement la requête.
+                </p>
+                <h4>Symptômes :</h4>
+                <ul class="symptoms-list">
+                    <li>Messages dans le plan d'exécution : <code>Warning: Operator used tempdb to spill data</code></li>
+                    <li>I/O élevé sur <code>tempdb</code></li>
+                    <li>Lenteur soudaine pour les requêtes avec tri/jointure</li>
+                </ul>
+                <h4>Causes possibles :</h4>
+                <ul class="causes-list">
+                    <li>Mémoire insuffisante (<code>max server memory</code> trop bas)</li>
+                    <li>Requêtes gourmandes en mémoire (<code>ORDER BY</code>, <code>GROUP BY</code>, <code>HASH JOIN</code>)</li>
+                    <li><code>tempdb</code> mal configuré (un seul fichier de données)</li>
+                    <li>Parallelisme excessif</li>
+                </ul>
+            </div>
+
+            <!-- I/O Élevé -->
+            <div class="problem-card">
+                <h3>5. I/O Élevé (Lectures disque) <span class="severity severity-medium">Impact Moyen</span></h3>
+                <p>
+                    La requête effectue trop de lectures physiques depuis le disque, ce qui la ralentit.
+                </p>
+                <h4>Symptômes :</h4>
+                <ul class="symptoms-list">
+                    <li>Temps d'exécution long (attente sur <code>PAGEIOLATCH_*</code>)</li>
+                    <li>I/O élevé dans <code>sys.dm_exec_query_stats</code> (<code>logical_reads</code>, <code>physical_reads</code>)</li>
+                    <li>Attentes sur le disque (<code>PAGEIOLATCH_SH</code>, <code>PAGEIOLATCH_EX</code>)</li>
+                </ul>
+                <h4>Causes possibles :</h4>
+                <ul class="causes-list">
+                    <li>Manque d'index (<code>Table Scan</code> ou <code>Clustered Index Scan</code>)</li>
+                    <li>Index non sélectifs</li>
+                    <li>Buffer Pool saturé</li>
+                    <li>Disques lents (HDD au lieu de SSD)</li>
+                    <li>Fragmentation des index</li>
+                </ul>
+            </div>
+
+            <!-- CPU Élevé -->
+            <div class="problem-card">
+                <h3>6. CPU Élevé <span class="severity severity-medium">Impact Moyen</span></h3>
+                <p>
+                    La requête consomme trop de CPU, ce qui ralentit le serveur et peut impacter d'autres requêtes.
+                </p>
+                <h4>Symptômes :</h4>
+                <ul class="symptoms-list">
+                    <li>CPU élevé dans <code>sys.dm_exec_query_stats</code> (<code>cpu_time</code>)</li>
+                    <li>Attentes sur <code>SOS_SCHEDULER_YIELD</code> (CPU saturé)</li>
+                    <li>Lenteur globale du serveur</li>
+                </ul>
+                <h4>Causes possibles :</h4>
+                <ul class="causes-list">
+                    <li>Opérateurs coûteux en CPU (<code>SORT</code>, <code>HASH MATCH</code>, <code>COMPUTE SCALAR</code>)</li>
+                    <li>Fonctions scalaires (<code>UPPER</code>, <code>LOWER</code>, <code>SUBSTRING</code>)</li>
+                    <li>Boucles (<code>WHILE</code>, cursors)</li>
+                    <li>Parallelisme excessif</li>
+                </ul>
+            </div>
+
+            <!-- Attentes -->
+            <div class="problem-card">
+                <h3>7. Attentes (Waits) <span class="severity severity-medium">Impact Moyen</span></h3>
+                <p>
+                    Les requêtes attendent une ressource (verrou, CPU, I/O, mémoire, etc.), ce qui ralentit leur exécution.
+                </p>
+                <h4>Symptômes :</h4>
+                <ul class="symptoms-list">
+                    <li>Requêtes lentes sans raison apparente</li>
+                    <li>Attentes visibles dans <code>sys.dm_os_wait_stats</code> ou <code>sys.dm_exec_requests</code></li>
+                </ul>
+                <h4>Causes possibles :</h4>
+                <ul class="causes-list">
+                    <li><code>PAGEIOLATCH_*</code> : Lecture depuis le disque (I/O lent)</li>
+                    <li><code>LCK_*</code> : Attente de verrou (blocking)</li>
+                    <li><code>SOS_SCHEDULER_YIELD</code> : CPU saturé</li>
+                    <li><code>CXPACKET</code> : Attente de synchronisation entre threads</li>
+                </ul>
+            </div>
+
+            <!-- Problèmes de tempdb -->
+            <div class="problem-card">
+                <h3>8. Problèmes de tempdb <span class="severity severity-medium">Impact Moyen</span></h3>
+                <p>
+                    <code>tempdb</code> est une base système utilisée pour les tables temporaires, les opérations de tri, 
+                    les jointures de hachage, etc. Les problèmes sur <code>tempdb</code> peuvent ralentir toutes les requêtes.
+                </p>
+                <h4>Symptômes :</h4>
+                <ul class="symptoms-list">
+                    <li>Lenteur des requêtes utilisant <code>tempdb</code></li>
+                    <li>Attentes sur <code>PFS</code> ou <code>GAM</code></li>
+                    <li>I/O élevé sur <code>tempdb</code></li>
+                    <li>Messages de spill to disk dans les plans d'exécution</li>
+                </ul>
+                <h4>Causes possibles :</h4>
+                <ul class="causes-list">
+                    <li>Un seul fichier de données (<code>tempdb.mdf</code>)</li>
+                    <li>Fichiers de données trop petits (autogrowth fréquent)</li>
+                    <li>Disques lents pour <code>tempdb</code></li>
+                    <li>Utilisation excessive (requêtes avec <code>ORDER BY</code>, <code>GROUP BY</code>)</li>
+                </ul>
+            </div>
+
+            <!-- Concurrence -->
+            <div class="problem-card">
+                <h3>9. Problèmes de Concurrence <span class="severity severity-medium">Impact Moyen</span></h3>
+                <p>
+                    Trop de requêtes s'exécutent simultanément, ce qui entraîne une contention sur les ressources 
+                    (CPU, I/O, mémoire), des blocages et des deadlocks.
+                </p>
+                <h4>Symptômes :</h4>
+                <ul class="symptoms-list">
+                    <li>Temps de réponse élevé pour toutes les requêtes</li>
+                    <li>Attentes fréquentes (<code>LCK_*</code>, <code>SOS_SCHEDULER_YIELD</code>)</li>
+                    <li>Deadlocks fréquents</li>
+                    <li>CPU à 100% en permanence</li>
+                </ul>
+                <h4>Causes possibles :</h4>
+                <ul class="causes-list">
+                    <li>Trop de connexions (pool de connexions mal configuré)</li>
+                    <li>Requêtes longues</li>
+                    <li>Parallelisme excessif</li>
+                    <li>Verrous incompatibles</li>
+                    <li>Ressources limitées (CPU, mémoire, I/O)</li>
+                </ul>
+            </div>
+
+            <!-- Recompilation -->
+            <div class="problem-card">
+                <h3>10. Problèmes de Compilation/Recompilation <span class="severity severity-low">Impact Faible</span></h3>
+                <p>
+                    Les requêtes sont recompilées trop souvent, ce qui consomme du CPU et ralentit l'exécution.
+                </p>
+                <h4>Symptômes :</h4>
+                <ul class="symptoms-list">
+                    <li>Temps de compilation élevé (visible dans <code>sys.dm_exec_query_stats</code>)</li>
+                    <li>CPU élevé sans I/O important</li>
+                    <li>Plans différents pour la même requête</li>
+                </ul>
+                <h4>Causes possibles :</h4>
+                <ul class="causes-list">
+                    <li>Statistiques obsolètes</li>
+                    <li>Changements de schéma</li>
+                    <li>Variables locales dans <code>WHERE</code></li>
+                    <li>Option <code>RECOMPILE</code> forcée</li>
+                    <li>Paramètre Sniffing</li>
+                    <li>Requêtes ad-hoc</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Outils de Diagnostic -->
+        <section id="outils">
+            <h2>🔧 Outils de Diagnostic</h2>
+            <p>
+                Voici les <strong>outils essentiels</strong> pour diagnostiquer les problèmes de performance dans SQL Server.
+            </p>
+
+            <div class="tools-section">
+                <div class="tool-card">
+                    <h4>📊 Plan d'Exécution</h4>
+                    <p>
+                        Affiche le plan d'exécution <strong>estimé</strong> ou <strong>réel</strong> d'une requête, 
+                        avec les coûts relatifs, les opérateurs utilisés et les warnings (ex. : spill to disk).
+                    </p>
+                    <p><strong>Commandes :</strong></p>
+                    <div class="diagnostic-tools">
+                        <div class="diagnostic-tool"><code>SET SHOWPLAN_TEXT ON</code></div>
+                        <div class="diagnostic-tool"><code>SET STATISTICS PROFILE ON</code></div>
+                        <div class="diagnostic-tool"><code>SET STATISTICS XML ON</code></div>
+                    </div>
+                </div>
+
+                <div class="tool-card">
+                    <h4>📈 DMV (Dynamic Management Views)</h4>
+                    <p>
+                        Les <strong>DMV</strong> fournissent des informations en temps réel sur les performances 
+                        du serveur, des requêtes, des index, etc.
+                    </p>
+                    <p><strong>DMV utiles :</strong></p>
+                    <div class="diagnostic-tools">
+                        <div class="diagnostic-tool"><code>sys.dm_exec_query_stats</code></div>
+                        <div class="diagnostic-tool"><code>sys.dm_exec_requests</code></div>
+                        <div class="diagnostic-tool"><code>sys.dm_os_wait_stats</code></div>
+                        <div class="diagnostic-tool"><code>sys.dm_tran_locks</code></div>
+                        <div class="diagnostic-tool"><code>sys.dm_io_virtual_file_stats</code></div>
+                    </div>
+                </div>
+
+                <div class="tool-card">
+                    <h4>🔍 SQL Server Profiler</h4>
+                    <p>
+                        Outil graphique pour capturer et analyser les <strong>événements</strong> (requêtes, verrous, 
+                        deadlocks, etc.) en temps réel.
+                    </p>
+                    <p><strong>Événements clés :</strong></p>
+                    <div class="diagnostic-tools">
+                        <div class="diagnostic-tool"><code>SQL:BatchStarting</code></div>
+                        <div class="diagnostic-tool"><code>SQL:BatchCompleted</code></div>
+                        <div class="diagnostic-tool"><code>Lock:Acquired</code></div>
+                        <div class="diagnostic-tool"><code>Lock:Released</code></div>
+                        <div class="diagnostic-tool"><code>Deadlock graph</code></div>
+                    </div>
+                </div>
+
+                <div class="tool-card">
+                    <h4>📉 Extended Events</h4>
+                    <p>
+                        Alternative légère à Profiler, permettant de capturer des <strong>événements spécifiques</strong> 
+                        avec un impact minimal sur les performances.
+                    </p>
+                    <p><strong>Sessions utiles :</strong></p>
+                    <div class="diagnostic-tools">
+                        <div class="diagnostic-tool"><code>system_health</code></div>
+                        <div class="diagnostic-tool"><code>Query Performance</code></div>
+                    </div>
+                </div>
+
+                <div class="tool-card">
+                    <h4>📊 Query Store</h4>
+                    <p>
+                        Fonctionnalité intégrée (SQL Server 2016+) qui capture les <strong>requêtes, leurs plans 
+                        d'exécution et leurs performances</strong> au fil du temps.
+                    </p>
+                    <p><strong>Commandes :</strong></p>
+                    <div class="diagnostic-tools">
+                        <div class="diagnostic-tool"><code>ALTER DATABASE [Nom] SET QUERY_STORE = ON</code></div>
+                    </div>
+                </div>
+
+                <div class="tool-card">
+                    <h4>🛠️ Database Engine Tuning Advisor</h4>
+                    <p>
+                        Outil qui analyse les requêtes et recommande des <strong>index, statistiques ou partitions</strong> 
+                        pour améliorer les performances.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Solutions et Bonnes Pratiques -->
+        <section id="solutions">
+            <h2>✅ Solutions et Bonnes Pratiques</h2>
+            <p>
+                Voici des <strong>solutions concrètes</strong> pour chaque problématique, ainsi que des bonnes pratiques 
+                générales pour optimiser vos requêtes SQL Server.
+            </p>
+
+            <div class="problem-card">
+                <h3>1. Optimiser le Plan d'Exécution</h3>
+                <div class="solution-box">
+                    <h4>🔹 Mettre à jour les statistiques</h4>
+                    <p>Les statistiques aident le Query Optimizer à générer des plans efficaces.</p>
+                    <div class="code-block">
+                        <span class="comment">-- Mettre à jour les statistiques d'une table</span><br>
+                        UPDATE STATISTICS [Schema].[Table] WITH FULLSCAN;<br><br>
+                        <span class="comment">-- Mettre à jour toutes les statistiques de la base</span><br>
+                        EXEC sp_updatestats;
+                    </div>
+                    <p><strong>Bonnes pratiques :</strong></p>
+                    <ul>
+                        <li>Activer <code>AUTO_UPDATE_STATISTICS</code> (activé par défaut).</li>
+                        <li>Pour les grandes tables, utiliser <code>WITH SAMPLE 50 PERCENT</code> pour éviter un <code>FULLSCAN</code> coûteux.</li>
+                        <li>Mettre à jour manuellement après des chargements massifs.</li>
+                    </ul>
+                </div>
+
+                <div class="solution-box">
+                    <h4>🔹 Éviter le Paramètre Sniffing</h4>
+                    <p>Le Paramètre Sniffing peut conduire à des plans sous-optimaux si la première valeur du paramètre est atypique.</p>
+                    <div class="code-block">
+                        <span class="comment">-- Utiliser OPTION (RECOMPILE)</span><br>
+                        EXEC sp_executesql N'SELECT * FROM Clients WHERE Ville = @Ville', 
+                        N'@Ville VARCHAR(50)', @Ville = 'Paris' WITH RECOMPILE;<br><br>
+                        <span class="comment">-- Utiliser OPTION (OPTIMIZE FOR UNKNOWN)</span><br>
+                        SELECT * FROM Clients WHERE Ville = @Ville OPTION (OPTIMIZE FOR UNKNOWN);
+                    </div>
+                </div>
+
+                <div class="solution-box">
+                    <h4>🔹 Ajouter ou optimiser les index</h4>
+                    <p>Les index améliorent les performances des requêtes en permettant des <code>Index Seek</code> au lieu de <code>Table Scan</code>.</p>
+                    <div class="code-block">
+                        <span class="comment">-- Index simple sur une colonne</span><br>
+                        CREATE INDEX IX_Clients_Ville ON Clients(Ville);<br><br>
+                        <span class="comment">-- Index composite</span><br>
+                        CREATE INDEX IX_Clients_Ville_Nom ON Clients(Ville, Nom);<br><br>
+                        <span class="comment">-- Index couvrant (INCLUDE)</span><br>
+                        CREATE INDEX IX_Clients_Ville ON Clients(Ville) INCLUDE (Nom, Prénom);<br><br>
+                        <span class="comment">-- Index filtré</span><br>
+                        CREATE INDEX IX_Clients_Ville_Paris ON Clients(Ville) WHERE Ville = 'Paris';
+                    </div>
+                    <div class="tip">
+                        <strong>Astuce :</strong> Utilisez le <strong>Database Engine Tuning Advisor</strong> pour identifier les index manquants.
+                    </div>
+                </div>
+
+                <div class="solution-box">
+                    <h4>🔹 Réécrire la requête</h4>
+                    <p>Évitez les fonctions sur les colonnes dans les clauses <code>WHERE</code>, car elles empêchent l'utilisation des index.</p>
+                    <div class="code-block">
+                        <span class="comment">-- ❌ Mauvaise pratique (ne peut pas utiliser l'index sur Ville)</span><br>
+                        SELECT * FROM Clients WHERE UPPER(Ville) = 'PARIS';<br><br>
+                        <span class="comment">-- ✅ Bonne pratique</span><br>
+                        SELECT * FROM Clients WHERE Ville = 'Paris' COLLATE SQL_Latin1_General_CP1_CI_AS;
+                    </div>
+                    <div class="code-block">
+                        <span class="comment">-- ❌ Sous-requête lente</span><br>
+                        SELECT * FROM Clients WHERE Id IN (SELECT ClientId FROM Commandes WHERE Montant > 1000);<br><br>
+                        <span class="comment">-- ✅ JOIN plus rapide</span><br>
+                        SELECT DISTINCT c.* FROM Clients c<br>
+                        JOIN Commandes co ON c.Id = co.ClientId<br>
+                        WHERE co.Montant > 1000;
+                    </div>
+                </div>
+            </div>
+
+            <div class="problem-card">
+                <h3>2. Résoudre le Blocking</h3>
+                <div class="solution-box">
+                    <h4>🔹 Réduire la durée des transactions</h4>
+                    <p>Les transactions longues augmentent le risque de blocking.</p>
+                    <div class="code-block">
+                        <span class="comment">-- ❌ Transaction trop longue</span><br>
+                        BEGIN TRANSACTION;<br>
+                        UPDATE Compte SET Solde = Solde - 100 WHERE Id = 1;<br>
+                        <span class="comment">-- Ne pas garder la transaction ouverte</span><br>
+                        COMMIT;
+                    </div>
+                    <div class="tip">
+                        <strong>Astuce :</strong> Commitez les transactions dès que possible.
+                    </div>
+                </div>
+
+                <div class="solution-box">
+                    <h4>🔹 Choisir le bon niveau d'isolation</h4>
+                    <p>Le niveau d'isolation détermine les verrous acquis par une transaction.</p>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Niveau</th>
+                                    <th>Verrous</th>
+                                    <th>Problèmes</th>
+                                    <th>Utilisation</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>READ UNCOMMITTED</code></td>
+                                    <td>Aucun (dirty reads)</td>
+                                    <td>Données non validées</td>
+                                    <td>Rapports, analyses</td>
+                                </tr>
+                                <tr>
+                                    <td><code>READ COMMITTED</code> (défaut)</td>
+                                    <td>Verrous partagés</td>
+                                    <td>Blocking possible</td>
+                                    <td>Requêtes standard</td>
+                                </tr>
+                                <tr>
+                                    <td><code>REPEATABLE READ</code></td>
+                                    <td>Verrous partagés jusqu'à la fin de la transaction</td>
+                                    <td>Blocking accru</td>
+                                    <td>Peu utilisé</td>
+                                </tr>
+                                <tr>
+                                    <td><code>SERIALIZABLE</code></td>
+                                    <td>Verrous partagés + verrous de plage</td>
+                                    <td>Blocking maximal</td>
+                                    <td>Transactions critiques</td>
+                                </tr>
+                                <tr>
+                                    <td><code>SNAPSHOT</code></td>
+                                    <td>Aucune (versioning)</td>
+                                    <td>Overhead mémoire</td>
+                                    <td>Requêtes en lecture seule</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="code-block">
+                        <span class="comment">-- Activer SNAPSHOT ISOLATION au niveau de la base</span><br>
+                        ALTER DATABASE MaBase SET ALLOW_SNAPSHOT_ISOLATION ON;<br><br>
+                        <span class="comment">-- Utiliser dans une requête</span><br>
+                        SET TRANSACTION ISOLATION LEVEL SNAPSHOT;<br>
+                        BEGIN TRANSACTION;<br>
+                        SELECT * FROM Clients WHERE Ville = 'Paris';<br>
+                        COMMIT;
+                    </div>
+                </div>
+
+                <div class="solution-box">
+                    <h4>🔹 Utiliser des hints de verrouillage</h4>
+                    <p>Les hints de verrouillage permettent de contrôler les verrous acquis par une requête.</p>
+                    <div class="code-block">
+                        <span class="comment">-- Ignorer les verrous (risque de dirty reads)</span><br>
+                        SELECT * FROM Clients WITH (NOLOCK) WHERE Ville = 'Paris';<br><br>
+                        <span class="comment">-- Prendre un verrou de mise à jour</span><br>
+                        SELECT * FROM Clients WITH (UPDLOCK) WHERE Ville = 'Paris';
+                    </div>
+                    <div class="warning">
+                        <strong>Attention :</strong> <code>NOLOCK</code> peut entraîner des <strong>dirty reads</strong> (lecture de données non validées).
+                    </div>
+                </div>
+            </div>
+
+            <div class="problem-card">
+                <h3>3. Résoudre les Deadlocks</h3>
+                <div class="solution-box">
+                    <h4>🔹 Analyser les graphes de deadlock</h4>
+                    <p>Les graphes de deadlock (capturés dans <code>system_health</code>) montrent quelles requêtes et quels verrous sont en conflit.</p>
+                    <div class="code-block">
+                        <span class="comment">-- Exemple de graphe de deadlock (XML)</span><br>
+                        &lt;deadlock&gt;<br>
+                        &nbsp;&nbsp;&lt;victim-list&gt;<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&lt;victimProcess id="process1" /&gt;<br>
+                        &nbsp;&nbsp;&lt;/victim-list&gt;<br>
+                        &nbsp;&nbsp;&lt;process-list&gt;<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&lt;process id="process1" waitresource="RID: 6:1:12345" waittype="LR" /&gt;<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&lt;process id="process2" waitresource="RID: 6:1:67890" waittype="LR" /&gt;<br>
+                        &nbsp;&nbsp;&lt;/process-list&gt;<br>
+                        &lt;/deadlock&gt;
+                    </div>
+                    <div class="tip">
+                        <strong>Astuce :</strong> Utilisez <strong>SQL Server Profiler</strong> ou <strong>Extended Events</strong> pour capturer les deadlocks.
+                    </div>
+                </div>
+
+                <div class="solution-box">
+                    <h4>🔹 Réécrire les requêtes pour éviter les deadlocks</h4>
+                    <p>Assurez-vous que toutes les requêtes accèdent aux tables <strong>dans le même ordre</strong>.</p>
+                    <div class="code-block">
+                        <span class="comment">-- ❌ Risque de deadlock</span><br>
+                        <span class="comment">-- Requête 1 : UPDATE TableA THEN TableB</span><br>
+                        <span class="comment">-- Requête 2 : UPDATE TableB THEN TableA</span><br><br>
+                        <span class="comment">-- ✅ Toujours accéder dans l'ordre TableA -> TableB</span><br>
+                        BEGIN TRANSACTION;<br>
+                        UPDATE TableA SET ... WHERE Id = 1;<br>
+                        UPDATE TableB SET ... WHERE Id = 1;<br>
+                        COMMIT;
+                    </div>
+                </div>
+
+                <div class="solution-box">
+                    <h4>🔹 Utiliser TRY/CATCH pour gérer les deadlocks</h4>
+                    <p>Capturez les deadlocks et réessayez automatiquement.</p>
+                    <div class="code-block">
+                        BEGIN TRY<br>
+                            BEGIN TRANSACTION;<br>
+                            UPDATE Compte SET Solde = Solde - 100 WHERE Id = 1;<br>
+                            UPDATE Compte SET Solde = Solde + 100 WHERE Id = 2;<br>
+                            COMMIT;<br>
+                        END TRY<br>
+                        BEGIN CATCH<br>
+                            IF ERROR_NUMBER() = 1205 <span class="comment">-- Deadlock</span><br>
+                            BEGIN<br>
+                                ROLLBACK;<br>
+                                <span class="comment">-- Réessayer après un délai</span><br>
+                                WAITFOR DELAY '00:00:01';<br>
+                                <span class="comment">-- Réexécuter la transaction</span><br>
+                            END<br>
+                            ELSE<br>
+                            BEGIN<br>
+                                ROLLBACK;<br>
+                                <span class="comment">-- Gérer l'erreur</span><br>
+                            END<br>
+                        END CATCH;
+                    </div>
+                </div>
+
+                <div class="solution-box">
+                    <h4>🔹 Utiliser SNAPSHOT ISOLATION</h4>
+                    <p><code>SNAPSHOT ISOLATION</code> évite les verrous en lecture, réduisant ainsi les risques de deadlock.</p>
+                    <div class="code-block">
+                        ALTER DATABASE MaBase SET ALLOW_SNAPSHOT_ISOLATION ON;<br><br>
+                        SET TRANSACTION ISOLATION LEVEL SNAPSHOT;<br>
+                        BEGIN TRANSACTION;<br>
+                        SELECT * FROM Clients WHERE Ville = 'Paris';<br>
+                        <span class="comment">-- Pas de verrou partagé, donc pas de blocking</span><br>
+                        COMMIT;
+                    </div>
+                </div>
+            </div>
+
+            <div class="problem-card">
+                <h3>4. Éviter le Spill to Disk</h3>
+                <div class="solution-box">
+                    <h4>🔹 Augmenter la mémoire allouée à SQL Server</h4>
+                    <p>Si SQL Server manque de mémoire, il utilise <code>tempdb</code> comme mémoire temporaire, ce qui ralentit les requêtes.</p>
+                    <div class="code-block">
+                        <span class="comment">-- Vérifier la mémoire actuelle</span><br>
+                        SELECT name, value, value_in_use<br>
+                        FROM sys.configurations<br>
+                        WHERE name = 'max server memory';<br><br>
+                        <span class="comment">-- Modifier (ex. : 16 Go)</span><br>
+                        EXEC sp_configure 'show advanced options', 1;<br>
+                        RECONFIGURE;<br>
+                        EXEC sp_configure 'max server memory', 16384; <span class="comment">-- 16 Go en Mo</span><br>
+                        RECONFIGURE;
+                    </div>
+                    <div class="tip">
+                        <strong>Astuce :</strong> Laissez <strong>10-20% de RAM libre</strong> pour le système d'exploitation.
+                    </div>
+                </div>
+
+                <div class="solution-box">
+                    <h4>🔹 Optimiser tempdb</h4>
+                    <p><code>tempdb</code> doit être configuré correctement pour éviter les contentions.</p>
+                    <div class="code-block">
+                        <span class="comment">-- Ajouter des fichiers de données à tempdb (1 par CPU logique, jusqu'à 8)</span><br>
+                        ALTER DATABASE tempdb<br>
+                        ADD FILE (NAME = tempdb2, FILENAME = 'C:\SQLData\tempdb2.ndf', SIZE = 1GB, FILEGROWTH = 512MB);<br><br>
+                        <span class="comment">-- Pré-allouer de l'espace</span><br>
+                        ALTER DATABASE tempdb<br>
+                        MODIFY FILE (NAME = tempdb, SIZE = 10GB, FILEGROWTH = 1GB);
+                    </div>
+                    <div class="tip">
+                        <strong>Astuce :</strong> Placez <code>tempdb</code> sur des <strong>disques rapides</strong> (SSD, RAID 10).
+                    </div>
+                </div>
+
+                <div class="solution-box">
+                    <h4>🔹 Réduire la mémoire utilisée par les requêtes</h4>
+                    <p>Évitez les opérations gourmandes en mémoire comme <code>ORDER BY</code>, <code>GROUP BY</code>, ou <code>HASH JOIN</code> sur de grands jeux de données.</p>
+                    <div class="code-block">
+                        <span class="comment">-- ❌ Requête avec spill</span><br>
+                        SELECT * FROM (<br>
+                            SELECT * FROM Clients<br>
+                            WHERE Ville = 'Paris'<br>
+                        ) AS c<br>
+                        JOIN Commandes co ON c.Id = co.ClientId<br>
+                        ORDER BY co.Montant DESC;<br><br>
+                        <span class="comment">-- ✅ Découper en deux requêtes</span><br>
+                        <span class="comment">-- 1. Récupérer les clients de Paris</span><br>
+                        SELECT Id, Nom INTO #ClientsParis FROM Clients WHERE Ville = 'Paris';<br><br>
+                        <span class="comment">-- 2. Joindre avec Commandes (avec un jeu de données réduit)</span><br>
+                        SELECT * FROM #ClientsParis c<br>
+                        JOIN Commandes co ON c.Id = co.ClientId<br>
+                        ORDER BY co.Montant DESC;<br><br>
+                        DROP TABLE #ClientsParis;
+                    </div>
+                </div>
+
+                <div class="solution-box">
+                    <h4>🔹 Limiter le parallelisme</h4>
+                    <p>Le parallelisme peut consommer trop de mémoire et provoquer des spills.</p>
+                    <div class="code-block">
+                        <span class="comment">-- Configurer Cost Threshold for Parallelism (par défaut : 5)</span><br>
+                        EXEC sp_configure 'show advanced options', 1;<br>
+                        RECONFIGURE;<br>
+                        EXEC sp_configure 'cost threshold for parallelism', 50;<br>
+                        RECONFIGURE;<br><br>
+                        <span class="comment">-- Limiter le MAXDOP (degré de parallelisme)</span><br>
+                        EXEC sp_configure 'max degree of parallelism', 4; <span class="comment">-- 4 CPU max</span><br>
+                        RECONFIGURE;
+                    </div>
+                </div>
+            </div>
+
+            <div class="problem-card">
+                <h3>5. Réduire l'I/O Élevé</h3>
+                <div class="solution-box">
+                    <h4>🔹 Ajouter des index</h4>
+                    <p>Les index permettent d'éviter les <code>Table Scan</code> coûteux.</p>
+                    <div class="code-block">
+                        <span class="comment">-- Index sur une colonne utilisée dans WHERE</span><br>
+                        CREATE INDEX IX_Clients_Ville ON Clients(Ville);<br><br>
+                        <span class="comment">-- Index composite pour WHERE + ORDER BY</span><br>
+                        CREATE INDEX IX_Clients_Ville_Nom ON Clients(Ville, Nom);<br><br>
+                        <span class="comment">-- Index couvrant pour éviter les Key Lookup</span><br>
+                        CREATE INDEX IX_Clients_Ville ON Clients(Ville) INCLUDE (Nom, Prénom);
+                    </div>
+                </div>
+
+                <div class="solution-box">
+                    <h4>🔹 Optimiser les requêtes</h4>
+                    <p>Évitez les <code>SELECT *</code> et utilisez des jointures efficaces.</p>
+                    <div class="code-block">
+                        <span class="comment">-- ❌ SELECT *</span><br>
+                        SELECT * FROM Clients WHERE Ville = 'Paris';<br><br>
+                        <span class="comment">-- ✅ Sélectionner uniquement les colonnes nécessaires</span><br>
+                        SELECT Id, Nom, Prénom FROM Clients WHERE Ville = 'Paris';
+                    </div>
+                </div>
+
+                <div class="solution-box">
+                    <h4>🔹 Réduire la fragmentation des index</h4>
+                    <p>La fragmentation des index peut dégrader les performances.</p>
+                    <div class="code-block">
+                        <span class="comment">-- Vérifier la fragmentation</span><br>
+                        SELECT<br>
+                            OBJECT_NAME(ind.OBJECT_ID) AS TableName,<br>
+                            ind.name AS IndexName,<br>
+                            indexstats.avg_fragmentation_in_percent<br>
+                        FROM sys.dm_db_index_physical_stats(DB_ID(), NULL, NULL, NULL, NULL) indexstats<br>
+                        INNER JOIN sys.indexes ind ON ind.object_id = indexstats.object_id AND ind.index_id = indexstats.index_id<br>
+                        WHERE indexstats.avg_fragmentation_in_percent > 30;<br><br>
+                        <span class="comment">-- Réorganiser (fragmentation entre 10% et 30%)</span><br>
+                        ALTER INDEX IX_Clients_Ville ON Clients REORGANIZE;<br><br>
+                        <span class="comment">-- Reconstruire (fragmentation > 30%)</span><br>
+                        ALTER INDEX IX_Clients_Ville ON Clients REBUILD WITH (ONLINE = OFF);
+                    </div>
+                </div>
+
+                <div class="solution-box">
+                    <h4>🔹 Utiliser des disques rapides</h4>
+                    <p>Les disques lents (HDD) peuvent causer des goulots d'étranglement en I/O.</p>
+                    <div class="tip">
+                        <strong>Astuce :</strong> Utilisez des <strong>SSD</strong> ou des disques en <strong>RAID 10</strong> pour les bases de données.
+                    </div>
+                </div>
+            </div>
+
+            <div class="problem-card">
+                <h3>6. Réduire l'Utilisation du CPU</h3>
+                <div class="solution-box">
+                    <h4>🔹 Éviter les fonctions scalaires dans WHERE</h4>
+                    <p>Les fonctions sur les colonnes dans <code>WHERE</code> empêchent l'utilisation des index.</p>
+                    <div class="code-block">
+                        <span class="comment">-- ❌ Mauvaise pratique</span><br>
+                        SELECT * FROM Clients WHERE UPPER(Ville) = 'PARIS';<br><br>
+                        <span class="comment">-- ✅ Bonne pratique</span><br>
+                        SELECT * FROM Clients WHERE Ville = 'Paris' COLLATE SQL_Latin1_General_CP1_CI_AS;
+                    </div>
+                </div>
+
+                <div class="solution-box">
+                    <h4>🔹 Remplacer les cursors par des requêtes ensemblistes</h4>
+                    <p>Les cursors sont lents et consomment beaucoup de CPU.</p>
+                    <div class="code-block">
+                        <span class="comment">-- ❌ Cursor lent</span><br>
+                        DECLARE @Id INT;<br>
+                        DECLARE cur CURSOR FOR SELECT Id FROM Clients WHERE Ville = 'Paris';<br>
+                        OPEN cur;<br>
+                        FETCH NEXT FROM cur INTO @Id;<br>
+                        WHILE @@FETCH_STATUS = 0<br>
+                        BEGIN<br>
+                            UPDATE Commandes SET Statut = 'Traité' WHERE ClientId = @Id;<br>
+                            FETCH NEXT FROM cur INTO @Id;<br>
+                        END<br>
+                        CLOSE cur;<br>
+                        DEALLOCATE cur;<br><br>
+                        <span class="comment">-- ✅ Requête ensembliste</span><br>
+                        UPDATE co<br>
+                        SET Statut = 'Traité'<br>
+                        FROM Commandes co<br>
+                        JOIN Clients c ON co.ClientId = c.Id<br>
+                        WHERE c.Ville = 'Paris';
+                    </div>
+                </div>
+
+                <div class="solution-box">
+                    <h4>🔹 Limiter le parallelisme</h4>
+                    <p>Le parallelisme peut consommer trop de CPU.</p>
+                    <div class="code-block">
+                        <span class="comment">-- Configurer Cost Threshold for Parallelism</span><br>
+                        EXEC sp_configure 'show advanced options', 1;<br>
+                        RECONFIGURE;<br>
+                        EXEC sp_configure 'cost threshold for parallelism', 50;<br>
+                        RECONFIGURE;<br><br>
+                        <span class="comment">-- Limiter le MAXDOP au niveau d'une requête</span><br>
+                        SELECT * FROM Clients WHERE Ville = 'Paris' OPTION (MAXDOP 2);
+                    </div>
+                </div>
+            </div>
+
+            <div class="problem-card">
+                <h3>7. Résoudre les Attentes (Waits)</h3>
+                <div class="solution-box">
+                    <h4>🔹 Identifier les attentes dominantes</h4>
+                    <p>Utilisez les DMV pour identifier les attentes les plus fréquentes.</p>
+                    <div class="code-block">
+                        <span class="comment">-- Top 10 des attentes</span><br>
+                        SELECT<br>
+                            wait_type,<br>
+                            waiting_tasks_count,<br>
+                            wait_time_ms,<br>
+                            max_wait_time_ms,<br>
+                            signal_wait_time_ms<br>
+                        FROM sys.dm_os_wait_stats<br>
+                        ORDER BY wait_time_ms DESC;
+                    </div>
+                </div>
+
+                <div class="solution-box">
+                    <h4>🔹 Résoudre les attentes spécifiques</h4>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Attente</th>
+                                    <th>Cause</th>
+                                    <th>Solution</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>PAGEIOLATCH_SH</code></td>
+                                    <td>I/O lent</td>
+                                    <td>Optimiser les index, ajouter de la mémoire, utiliser des SSD</td>
+                                </tr>
+                                <tr>
+                                    <td><code>LCK_M_S</code></td>
+                                    <td>Blocking</td>
+                                    <td>Réduire la durée des transactions, utiliser <code>SNAPSHOT ISOLATION</code></td>
+                                </tr>
+                                <tr>
+                                    <td><code>SOS_SCHEDULER_YIELD</code></td>
+                                    <td>CPU saturé</td>
+                                    <td>Limiter le parallelisme, optimiser les requêtes</td>
+                                </tr>
+                                <tr>
+                                    <td><code>CXPACKET</code></td>
+                                    <td>Parallelisme excessif</td>
+                                    <td>Réduire le <code>MAXDOP</code></td>
+                                </tr>
+                                <tr>
+                                    <td><code>ASYNC_NETWORK_IO</code></td>
+                                    <td>Client lent</td>
+                                    <td>Optimiser l'application (ex. : <code>SET NOCOUNT ON</code>)</td>
+                                </tr>
+                                <tr>
+                                    <td><code>WRITELOG</code></td>
+                                    <td>Log lent</td>
+                                    <td>Placer le log sur un disque rapide, commiter moins souvent</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="problem-card">
+                <h3>8. Optimiser tempdb</h3>
+                <div class="solution-box">
+                    <h4>🔹 Configurer tempdb correctement</h4>
+                    <p><code>tempdb</code> doit avoir plusieurs fichiers de données pour éviter les contentions.</p>
+                    <div class="code-block">
+                        <span class="comment">-- Ajouter des fichiers de données à tempdb (1 par CPU logique, jusqu'à 8)</span><br>
+                        USE master;<br>
+                        GO<br>
+                        ALTER DATABASE tempdb<br>
+                        ADD FILE (NAME = tempdb2, FILENAME = 'C:\SQLData\tempdb2.ndf', SIZE = 1GB, FILEGROWTH = 512MB);<br>
+                        ALTER DATABASE tempdb<br>
+                        ADD FILE (NAME = tempdb3, FILENAME = 'C:\SQLData\tempdb3.ndf', SIZE = 1GB, FILEGROWTH = 512MB);<br>
+                        ALTER DATABASE tempdb<br>
+                        ADD FILE (NAME = tempdb4, FILENAME = 'C:\SQLData\tempdb4.ndf', SIZE = 1GB, FILEGROWTH = 512MB);
+                    </div>
+                    <div class="tip">
+                        <strong>Astuce :</strong> Désactivez l'<strong>autogrowth</strong> pour éviter la fragmentation.
+                    </div>
+                </div>
+
+                <div class="solution-box">
+                    <h4>🔹 Éviter les variables de table</h4>
+                    <p>Les variables de table (<code>@table</code>) n'ont pas d'index et peuvent causer des performances médiocres.</p>
+                    <div class="code-block">
+                        <span class="comment">-- ❌ Variable de table lente</span><br>
+                        DECLARE @Clients TABLE (Id INT, Nom VARCHAR(50));
+                        INSERT INTO @Clients SELECT Id, Nom FROM Clients WHERE Ville = 'Paris';
+                        SELECT * FROM @Clients WHERE Nom LIKE 'D%';
+                        <br><br>
+                        <span class="comment">-- ✅ Table temporaire</span><br>
+                        CREATE TABLE #Clients (Id INT, Nom VARCHAR(50));
+                        CREATE INDEX IX_Nom ON #Clients(Nom);
+                        INSERT INTO #Clients SELECT Id, Nom FROM Clients WHERE Ville = 'Paris';
+                        SELECT * FROM #Clients WHERE Nom LIKE 'D%';
+                        DROP TABLE #Clients;
+                    </div>
+                </div>
+            </div>
+
+            <div class="problem-card">
+                <h3>9. Gérer la Concurrence</h3>
+                <div class="solution-box">
+                    <h4>🔹 Limiter le nombre de connexions</h4>
+                    <p>Trop de connexions peuvent saturer le serveur.</p>
+                    <div class="code-block">
+                        <span class="comment">-- Configurer le pool de connexions dans l'application</span><br>
+                        <span class="comment">-- Exemple en C# (ADO.NET)</span><br>
+                        <span class="keyword">using</span> (SqlConnection connection = <span class="keyword">new</span> SqlConnection(connectionString))
+                        {
+                            <span class="comment">// Max Pool Size = 100</span><br>
+                            connectionString += ";Max Pool Size=100";
+                        }
+                        <br><br>
+                        <span class="comment">-- Limiter les connexions au niveau de SQL Server</span><br>
+                        EXEC sp_configure 'show advanced options', 1;<br>
+                        RECONFIGURE;<br>
+                        EXEC sp_configure 'user connections', 100; <span class="comment">-- Limiter à 100 connexions</span><br>
+                        RECONFIGURE;
+                    </div>
+                </div>
+
+                <div class="solution-box">
+                    <h4>🔹 Utiliser Resource Governor</h4>
+                    <p><code>Resource Governor</code> permet de limiter les ressources (CPU, mémoire, I/O) pour différents groupes de travail.</p>
+                    <div class="code-block">
+                        <span class="comment">-- Créer un pool de ressources</span><br>
+                        CREATE RESOURCE POOL AdHocPool WITH (
+                            MAX_CPU_PERCENT = 30,
+                            CAP_CPU_PERCENT = 50,
+                            MAX_MEMORY_PERCENT = 20
+                        );<br><br>
+                        <span class="comment">-- Créer un groupe de travail</span><br>
+                        CREATE WORKLOAD GROUP AdHocGroup
+                        USING AdHocPool;
+                    </div>
+                </div>
+
+                <div class="solution-box">
+                    <h4>🔹 Utiliser Query Store</h4>
+                    <p><code>Query Store</code> capture les requêtes, leurs plans d'exécution et leurs performances au fil du temps.</p>
+                    <div class="code-block">
+                        <span class="comment">-- Activer Query Store</span><br>
+                        ALTER DATABASE MaBase SET QUERY_STORE = ON
+                        (OPERATION_MODE = READ_WRITE, CLEANUP_POLICY = (STALE_QUERY_THRESHOLD_DAYS = 30));
+                        <br><br>
+                        <span class="comment">-- Identifier les requêtes problématiques</span><br>
+                        SELECT
+                            qt.query_sql_text,
+                            qs.execution_type_desc,
+                            qs.count_executions,
+                            qs.avg_logical_io_reads,
+                            qs.avg_duration_ms
+                        FROM sys.query_store_query q
+                        JOIN sys.query_store_query_text qt ON q.query_text_id = qt.query_text_id
+                        JOIN sys.query_store_runtime_stats qs ON q.query_id = qs.query_id
+                        ORDER BY qs.avg_duration_ms DESC;
+                    </div>
+                </div>
+            </div>
+
+            <div class="problem-card">
+                <h3>10. Éviter les Recompilations Inutiles</h3>
+                <div class="solution-box">
+                    <h4>🔹 Utiliser des requêtes paramétrées</h4>
+                    <p>Les requêtes paramétrées permettent de réutiliser les plans d'exécution.</p>
+                    <div class="code-block">
+                        <span class="comment">-- ❌ Recompile à chaque exécution (variable locale)</span><br>
+                        DECLARE @Id INT = 1;
+                        SELECT * FROM Clients WHERE Id = @Id;
+                        <br><br>
+                        <span class="comment">-- ✅ Requête paramétrée (plan réutilisable)</span><br>
+                        EXEC sp_executesql N'SELECT * FROM Clients WHERE Id = @Id', N'@Id INT', @Id = 1;
+                    </div>
+                </div>
+
+                <div class="solution-box">
+                    <h4>🔹 Mettre à jour les statistiques automatiquement</h4>
+                    <p>Les statistiques obsolètes peuvent causer des recompilations inutiles.</p>
+                    <div class="code-block">
+                        <span class="comment">-- Activer la mise à jour automatique des statistiques</span><br>
+                        ALTER DATABASE MaBase SET AUTO_UPDATE_STATISTICS ON;
+                        <br><br>
+                        <span class="comment">-- Configurer la mise à jour asynchrone</span><br>
+                        ALTER DATABASE MaBase SET AUTO_UPDATE_STATISTICS_ASYNC ON;
+                    </div>
+                </div>
+
+                <div class="solution-box">
+                    <h4>🔹 Utiliser OPTION (KEEP PLAN)</h4>
+                    <p><code>KEEP PLAN</code> (SQL Server 2016+) permet de conserver le plan d'exécution même si les statistiques changent.</p>
+                    <div class="code-block">
+                        SELECT * FROM Clients WHERE Ville = 'Paris' OPTION (KEEP PLAN);
+                    </div>
+                </div>
+
+                <div class="solution-box">
+                    <h4>🔹 Nettoyer le cache des plans</h4>
+                    <p>Si le cache est pollué par des plans ad-hoc, vous pouvez le nettoyer.</p>
+                    <div class="code-block">
+                        <span class="comment">-- Nettoyer le cache des plans (à utiliser avec prudence)</span><br>
+                        DBCC FREESYSTEMCACHE('ALL');
+                        DBCC FREEPROCCACHE;
+                        <br><br>
+                        <span class="comment">-- Utiliser OPTIMIZE_FOR_AD_HOC_WORKLOADS pour réduire la mémoire utilisée par les plans ad-hoc</span><br>
+                        ALTER DATABASE MaBase SET OPTIMIZE_FOR_AD_HOC_WORKLOADS ON;
+                    </div>
+                    <div class="warning">
+                        <strong>Attention :</strong> Nettoyer le cache des plans peut <strong>dégrader temporairement les performances</strong> 
+                        car SQL Server devra recompiler les requêtes.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Checklist de Dépannage -->
+        <section id="checklist">
+            <h2>📋 Checklist de Dépannage</h2>
+            <p>
+                Suivez cette <strong>checklist</strong> pour diagnostiquer et résoudre les problèmes de performance 
+                dans SQL Server.
+            </p>
+
+            <div class="solution-box">
+                <h4>🔹 Étape 1 : Identifier la requête lente</h4>
+                <p>Utilisez les DMV ou Query Store pour identifier les requêtes les plus lentes.</p>
+                <div class="code-block">
+                    <span class="comment">-- Top 10 des requêtes les plus lentes</span><br>
+                    SELECT TOP 10<br>
+                        qs.execution_count,<br>
+                        qs.total_logical_reads,<br>
+                        qs.total_logical_writes,<br>
+                        qs.total_worker_time,<br>
+                        qs.total_elapsed_time,<br>
+                        qs.total_elapsed_time / qs.execution_count AS avg_elapsed_time,<br>
+                        SUBSTRING(qt.text, (qs.statement_start_offset/2) + 1,<br>
+                            ((CASE qs.statement_end_offset<br>
+                                WHEN -1 THEN DATALENGTH(qt.text)<br>
+                                ELSE qs.statement_end_offset<br>
+                            END - qs.statement_start_offset)/2) + 1) AS query_text,<br>
+                        qp.query_plan<br>
+                    FROM sys.dm_exec_query_stats qs<br>
+                    CROSS APPLY sys.dm_exec_sql_text(qs.sql_handle) qt<br>
+                    CROSS APPLY sys.dm_exec_query_plan(qs.plan_handle) qp<br>
+                    ORDER BY qs.total_elapsed_time / qs.execution_count DESC;
+                </div>
+            </div>
+
+            <div class="solution-box">
+                <h4>🔹 Étape 2 : Analyser le plan d'exécution</h4>
+                <p>Vérifiez les opérateurs coûteux et les warnings dans le plan d'exécution.</p>
+                <ul>
+                    <li>Cherchez les opérateurs <code>Table Scan</code>, <code>Index Scan</code>, <code>Sort</code>, <code>Hash Match</code>.</li>
+                    <li>Vérifiez les warnings (ex. : <code>spill to disk</code>).</li>
+                    <li>Utilisez <code>SET SHOWPLAN_TEXT ON</code> ou <code>SET STATISTICS PROFILE ON</code>.</li>
+                </ul>
+            </div>
+
+            <div class="solution-box">
+                <h4>🔹 Étape 3 : Vérifier les attentes</h4>
+                <p>Identifiez les attentes dominantes avec les DMV.</p>
+                <div class="code-block">
+                    <span class="comment">-- Top 10 des attentes</span><br>
+                    SELECT<br>
+                        wait_type,<br>
+                        waiting_tasks_count,<br>
+                        wait_time_ms,<br>
+                        max_wait_time_ms,<br>
+                        signal_wait_time_ms<br>
+                    FROM sys.dm_os_wait_stats<br>
+                    ORDER BY wait_time_ms DESC;
+                </div>
+            </div>
+
+            <div class="solution-box">
+                <h4>🔹 Étape 4 : Vérifier les verrous</h4>
+                <p>Identifiez les blocages avec <code>sys.dm_tran_locks</code>.</p>
+                <div class="code-block">
+                    <span class="comment">-- Voir les verrous actifs</span><br>
+                    SELECT<br>
+                        r.session_id,<br>
+                        r.wait_type,<br>
+                        r.wait_time,<br>
+                        r.wait_resource,<br>
+                        t.text AS [Query]<br>
+                    FROM sys.dm_exec_requests r<br>
+                    CROSS APPLY sys.dm_exec_sql_text(r.sql_handle) t<br>
+                    WHERE r.wait_type LIKE 'LCK%';
+                </div>
+            </div>
+
+            <div class="solution-box">
+                <h4>🔹 Étape 5 : Vérifier l'utilisation des ressources</h4>
+                <p>Surveillez l'utilisation du CPU, de la mémoire et de l'I/O.</p>
+                <div class="code-block">
+                    <span class="comment">-- Utilisation du CPU</span><br>
+                    SELECT<br>
+                        SQLProcessUtilization AS [SQL Server CPU %],<br>
+                        SystemIdle AS [System Idle %],<br>
+                        100 - SystemIdle - SQLProcessUtilization AS [Other Processes CPU %]<br>
+                    FROM (
+                        SELECT<br>
+                            record.value('(./Record/@id)[1]', 'int') AS record_id,
+                            record.value('(./Record/SchedulerMonitorEvent/SystemHealth/SystemIdle)[1]', 'int') AS SystemIdle,
+                            record.value('(./Record/SchedulerMonitorEvent/SystemHealth/ProcessUtilization)[1]', 'int') AS SQLProcessUtilization
+                        FROM (
+                            SELECT [timestamp], CONVERT(xml, record) AS [record]
+                            FROM sys.dm_os_ring_buffers
+                            WHERE ring_buffer_type = N'RING_BUFFER_SCHEDULER_MONITOR'
+                        ) AS x
+                    ) AS y<br>
+                    ORDER BY record_id DESC;
+                </div>
+            </div>
+
+            <div class="solution-box">
+                <h4>🔹 Étape 6 : Optimiser la requête</h4>
+                <p>Appliquez les solutions adaptées en fonction de la problématique identifiée.</p>
+                <ul>
+                    <li>Ajoutez ou optimisez les <strong>index</strong>.</li>
+                    <li>Réécrivez la requête pour éviter les <strong>fonctions scalaires</strong> dans <code>WHERE</code>.</li>
+                    <li>Utilisez des <strong>requêtes paramétrées</strong> pour éviter le <strong>Paramètre Sniffing</strong>.</li>
+                    <li>Limitez le <strong>parallelisme</strong> si nécessaire.</li>
+                    <li>Optimisez <strong>tempdb</strong> (plusieurs fichiers de données, disques rapides).</li>
+                </ul>
+            </div>
+
+            <div class="solution-box">
+                <h4>🔹 Étape 7 : Vérifier tempdb</h4>
+                <p>Assurez-vous que <code>tempdb</code> est correctement configuré.</p>
+                <div class="code-block">
+                    <span class="comment">-- Vérifier l'utilisation de tempdb</span><br>
+                    SELECT<br>
+                        DB_NAME(database_id) AS DatabaseName,<br>
+                        file_id,<br>
+                        file_type = CASE type_desc<br>
+                            WHEN 'ROWS' THEN 'Data File'<br>
+                            WHEN 'LOG' THEN 'Log File'<br>
+                            ELSE type_desc<br>
+                        END,<br>
+                        size_mb = size / 128.0,<br>
+                        used_mb = FILEPROPERTY(name, 'SpaceUsed') / 128.0,<br>
+                        free_mb = (size - FILEPROPERTY(name, 'SpaceUsed')) / 128.0<br>
+                    FROM sys.dm_os_buffer_descriptors<br>
+                    WHERE database_id = 2; <span class="comment">-- tempdb a l'ID 2</span>
+                </div>
+            </div>
+
+            <div class="solution-box">
+                <h4>🔹 Étape 8 : Configurer Resource Governor (si nécessaire)</h4>
+                <p>Utilisez <code>Resource Governor</code> pour limiter les ressources par groupe de travail.</p>
+                <div class="code-block">
+                    <span class="comment">-- Créer un pool de ressources pour les requêtes ad-hoc</span><br>
+                    CREATE RESOURCE POOL AdHocPool WITH (
+                        MAX_CPU_PERCENT = 30,
+                        CAP_CPU_PERCENT = 50,
+                        MAX_MEMORY_PERCENT = 20
+                    );
+                    <br><br>
+                    <span class="comment">-- Créer un groupe de travail</span><br>
+                    CREATE WORKLOAD GROUP AdHocGroup USING AdHocPool;
+                </div>
+            </div>
+        </section>
+
+        <!-- Ressources Utiles -->
+        <section id="ressources">
+            <h2>📚 Ressources Utiles</h2>
+            <p>
+                Voici une liste de <strong>ressources</strong> pour approfondir vos connaissances en optimisation SQL Server.
+            </p>
+
+            <div class="tools-section">
+                <div class="tool-card">
+                    <h4>📖 Documentation Officielle Microsoft</h4>
+                    <p>
+                        La documentation officielle de Microsoft est une excellente ressource pour comprendre 
+                        les fonctionnalités de SQL Server.
+                    </p>
+                    <p><strong>Liens utiles :</strong></p>
+                    <ul>
+                        <li><a href="https://docs.microsoft.com/fr-fr/sql/relational-databases/performance-monitoring/performance-monitoring-and-tuning?view=sql-server-ver16" target="_blank">Surveillance et optimisation des performances</a></li>
+                        <li><a href="https://docs.microsoft.com/fr-fr/sql/relational-databases/query-processing-architecture-guide?view=sql-server-ver16" target="_blank">Architecture du traitement des requêtes</a></li>
+                        <li><a href="https://docs.microsoft.com/fr-fr/sql/relational-databases/performance/execution-plan-caching-and-reuse?view=sql-server-ver16" target="_blank">Mise en cache et réutilisation des plans d'exécution</a></li>
+                    </ul>
+                </div>
+
+                <div class="tool-card">
+                    <h4>🎥 Formations en Ligne</h4>
+                    <p>
+                        Plusieurs plateformes proposent des formations gratuites ou payantes sur SQL Server.
+                    </p>
+                    <p><strong>Plateformes :</strong></p>
+                    <ul>
+                        <li><a href="https://www.udemy.com/" target="_blank">Udemy</a> (cours payants, souvent en promotion)</li>
+                        <li><a href="https://www.coursera.org/" target="_blank">Coursera</a> (cours universitaires)</li>
+                        <li><a href="https://www.pluralsight.com/" target="_blank">Pluralsight</a> (abonnements pour professionnels)</li>
+                        <li><a href="https://www.youtube.com/" target="_blank">YouTube</a> (tutoriels gratuits, ex. : chaîne <strong>SQL Server Tutorial</strong>)</li>
+                    </ul>
+                </div>
+
+                <div class="tool-card">
+                    <h4>📰 Blogs et Communautés</h4>
+                    <p>
+                        Restez à jour avec les dernières bonnes pratiques grâce aux blogs et forums dédiés.
+                    </p>
+                    <p><strong>Blogs :</strong></p>
+                    <ul>
+                        <li><a href="https://www.sqlservercentral.com/" target="_blank">SQLServerCentral</a></li>
+                        <li><a href="https://sqlperformance.com/" target="_blank">SQL Performance</a></li>
+                        <li><a href="https://www.brentozar.com/" target="_blank">Brent Ozar Unlimited</a></li>
+                        <li><a href="https://www.sqlshack.com/" target="_blank">SQLShack</a></li>
+                    </ul>
+                    <p><strong>Forums :</strong></p>
+                    <ul>
+                        <li><a href="https://stackoverflow.com/questions/tagged/sql-server" target="_blank">Stack Overflow (SQL Server)</a></li>
+                        <li><a href="https://social.msdn.microsoft.com/Forums/en-US/home?forum=sqlserver" target="_blank">Forum MSDN SQL Server</a></li>
+                    </ul>
+                </div>
+
+                <div class="tool-card">
+                    <h4>🛠️ Outils Tierces</h4>
+                    <p>
+                        Plusieurs outils tierces peuvent vous aider à optimiser SQL Server.
+                    </p>
+                    <p><strong>Outils populaires :</strong></p>
+                    <ul>
+                        <li><a href="https://www.red-gate.com/products/sql-development/sql-prompt/" target="_blank">SQL Prompt (Redgate)</a> : Complétion de code et analyse de requêtes.</li>
+                        <li><a href="https://www.solarwinds.com/database-performance-analyzer" target="_blank">SolarWinds Database Performance Analyzer</a> : Surveillance des performances.</li>
+                        <li><a href="https://www.idera.com/productssql/database-tools/sql-diagnostic-manager" target="_blank">IDERA SQL Diagnostic Manager</a> : Diagnostic et alertes.</li>
+                        <li><a href="https://www.sentryone.com/" target="_blank">SentryOne</a> : Surveillance et optimisation.</li>
+                    </ul>
+                </div>
+
+                <div class="tool-card">
+                    <h4>📊 Scripts Utiles</h4>
+                    <p>
+                        Voici quelques scripts utiles pour surveiller et optimiser SQL Server.
+                    </p>
+                    <p><strong>Script 1 : Top 10 des requêtes les plus lentes</strong></p>
+                    <div class="code-block">
+                        SELECT TOP 10<br>
+                            qs.execution_count,<br>
+                            qs.total_logical_reads,<br>
+                            qs.total_logical_writes,<br>
+                            qs.total_worker_time,<br>
+                            qs.total_elapsed_time,<br>
+                            qs.total_elapsed_time / qs.execution_count AS avg_elapsed_time,<br>
+                            SUBSTRING(qt.text, (qs.statement_start_offset/2) + 1,<br>
+                                ((CASE qs.statement_end_offset<br>
+                                    WHEN -1 THEN DATALENGTH(qt.text)<br>
+                                    ELSE qs.statement_end_offset<br>
+                                END - qs.statement_start_offset)/2) + 1) AS query_text<br>
+                        FROM sys.dm_exec_query_stats qs<br>
+                        CROSS APPLY sys.dm_exec_sql_text(qs.sql_handle) qt<br>
+                        ORDER BY qs.total_elapsed_time / qs.execution_count DESC;
+                    </div>
+                    <p><strong>Script 2 : Index manquants</strong></p>
+                    <div class="code-block">
+                        SELECT<br>
+                            migs.avg_total_user_cost * (migs.avg_user_impact / 100.0) * (migs.user_seeks + migs.user_scans) AS improvement_measure,<br>
+                            'CREATE INDEX [missing_index_' + CONVERT (varchar, mig.index_group_handle) + '_' + CONVERT (varchar, mid.index_handle) + '_' + LEFT (PARSENAME(mid.statement, 1), 32) + ']'<br>
+                            + ' ON ' + mid.equality_columns +<br>
+                            ISNULL (' INCLUDE (' + mid.inequality_columns + ')', '') +<br>
+                            ISNULL (' WHERE ' + mid.predicate, '') AS create_index_statement,<br>
+                            migs.*, mid.database_id, mid.[object_id]<br>
+                        FROM sys.dm_db_missing_index_groups mig<br>
+                        INNER JOIN sys.dm_db_missing_index_group_stats migs ON migs.group_handle = mig.index_group_handle<br>
+                        INNER JOIN sys.dm_db_missing_index_details mid ON mig.index_handle = mid.index_handle<br>
+                        WHERE migs.avg_total_user_cost * (migs.avg_user_impact / 100.0) * (migs.user_seeks + migs.user_scans) > 10<br>
+                        ORDER BY migs.avg_total_user_cost * migs.avg_user_impact * (migs.user_seeks + migs.user_scans) DESC;
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <footer>
+        <p>📅 Dernière mise à jour : Juin 2026 | 📧 Contact : support@sql-optimization.com</p>
+        <p>© 2026 Guide d'Optimisation SQL Server. Tous droits réservés.</p>
+    </footer>
+</body>
+</html>
