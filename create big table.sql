@@ -119,6 +119,7 @@ SELECT newid(),newid(),DATEADD(month,1,date_facture), ABS(CHECKSUM(NewId())) % 1
 FROM TBL_clients
 
 -- repartition aleatoire  des nom et prenom (pas de lignes identiques)
+-- information : texte plus ou moins long contenant des mots
 SELECT TOP 10 PERCENT * FROM TBL_clients
 
 -- Repartition gaussienne
